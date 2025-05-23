@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "832577366846",
+    "project_id": "flutter-todo-57be7",
+    "storage_bucket": "flutter-todo-57be7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:832577366846:android:b93663b7467096dfca1a6f",
+        "android_client_info": {
+          "package_name": "com.example.flutter_todo_remind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvXnHNYDKtuL5rpaxJsi_YCHYgijkLlxA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

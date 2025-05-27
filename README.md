@@ -30,3 +30,20 @@ https://firebase.google.com/docs/flutter/setup?hl=ko&platform=ios
         }
         ```
     - 파이어베이스 파이어스토어 데이터베이스 사용을 하기 위한 패키지 추가 : flutter pub add cloud_firestore
+
+
+
+
+
+
+## 앞으로 진행할거
+- 모델클래스 없이
+    - [X] 쓰기
+    - [ ] 전체 읽어오기
+    - [ ] 삭제
+    - [ ] 수정
+- [ ] 모델클래스 도입
+- [ ] ViewModel 도입
+
+
+> 다음주 이후 화,금~!

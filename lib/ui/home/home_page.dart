@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_todo_remind/ui/home/todo_item.dart';
 
@@ -59,8 +60,30 @@ class HomePage extends StatelessWidget {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () {
-                          print(content);
-                          // TODO content 파이어베이스에 저장!
+                          // content라는 변수의 값을
+                          // Firestore 내 todo_data 라는 컬렉션에 저장
+
+                          // 파이어스토어에 저장할때 해야하는 순서:
+                          // 1. Firebase 인스턴스(객체) 가지고 오기
+                          // FirebaseFirestore() => 일반적인 객체 생성방법
+                          // Firebase는 FirebaseFirestore.instance 함수 이용해서 객체를 가지고 와야됨! (사용법)
+                          FirebaseFirestore firestore =
+                              FirebaseFirestore.instance;
+                          // 2. 가지고 온 파이어베이스 객체의 메서드를 사용해서 컬렉션 참조 만들기
+                          CollectionReference collectionRef =
+                              firestore.collection('todo_data');
+                          // 3. 만든 컬렉션 참조를 이용해서 문서 참조 만들기
+                          // 문서 참조 만들때 : doc 메서드 안에 String 타입의 변수 넣으면 해당 ID에 해당하는 문서 참조를 만듦.
+                          // 새로운 문서 만들거기 때문에 비워둠!
+                          DocumentReference docRef = collectionRef.doc();
+                          // 4. 문서참조 이용해서 데이터 저장하기
+                          // 키 - 값 쌍으로 값을 저장
+                          Map<String, dynamic> data = {
+                            'isDone': false,
+                            'content': content,
+                          };
+                          docRef.set(data);
+                          Navigator.pop(context);
                         },
                         style: ButtonStyle(
                           backgroundColor: WidgetStatePropertyAll(

@@ -33,7 +33,11 @@ class _HomePageState extends State<HomePage> {
 
     for (var doc in documentList) {
       Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      newList.add(data);
+      Map<String, dynamic> dataWithId = {
+        ...data,
+        "id": doc.id,
+      };
+      newList.add(dataWithId);
     }
 
     setState(() {
@@ -175,12 +179,23 @@ class _HomePageState extends State<HomePage> {
         child: ListView.separated(
           itemBuilder: (context, index) {
             Map<String, dynamic> todo = todoDatas[index];
-            // { "isDone" : false, "content" : "hi" }
+            // { "isDone" : false, "content" : "hi", "id" : "dsaklfjlaskfjalsk" }
+            print(todo);
 
             return TodoItem(
               isChecked: todo["isDone"],
               text: todo["content"],
-              onDelete: () {},
+              onDelete: () async {
+                // 1. 파이어스토어 인스턴스 가지고오기
+                FirebaseFirestore firestore = FirebaseFirestore.instance;
+                // 2. 컬렉션 참조 만들기
+                CollectionReference colRef = firestore.collection('todo_data');
+                // 3. 컬렉션 참조로 특정 문서에 대한 문서 참조 만들기.
+                DocumentReference docRef = colRef.doc(todo["id"]);
+                // 4. 삭제
+                await docRef.delete();
+                loadTodoList();
+              },
               onEdit: () {},
             );
           },

@@ -2,7 +2,45 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_todo_remind/ui/home/todo_item.dart';
 
-class HomePage extends StatelessWidget {
+// 투두리스트 파이어스토어에서 가져와야하는 시점
+// => HomePage 들어왔을 때 최초 한번!
+class HomePage extends StatefulWidget {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<Map<String, dynamic>> todoDatas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // HomePage 들어왔을 때 최초 한번만 실행되는곳!
+    loadTodoList();
+  }
+
+  void loadTodoList() async {
+    // 전체 투두리스트 파이어스토어에서 가져오기
+    // 1. Firestore 인스턴스 가지고오기
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    // 2. 컬렉션 참조 만들기
+    CollectionReference colRef = firestore.collection('todo_data');
+    // 3. 모든 문서 불러오기
+    QuerySnapshot snapshot = await colRef.get();
+    List<QueryDocumentSnapshot> documentList = snapshot.docs;
+    // 4. 가지고온 데이터를 변환해주기!
+    List<Map<String, dynamic>> newList = [];
+
+    for (var doc in documentList) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      newList.add(data);
+    }
+
+    setState(() {
+      todoDatas = newList;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     PreferredSizeWidget;
@@ -134,31 +172,22 @@ class HomePage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-            // 위젯들 배치
-            TodoItem(
-              isChecked: false,
-              text: '물마시기',
-              onDelete: () {
-                print('물마시기 삭제 처치됨');
-              },
-              onEdit: () {
-                print('물마시기 수정 처치됨');
-              },
-            ),
-            SizedBox(height: 20),
-            TodoItem(
-              isChecked: true,
-              text: '프로그래밍프로그래밍프로그래밍프로그래밍',
-              onDelete: () {
-                print('프로그래밍 삭제 처치됨');
-              },
-              onEdit: () {
-                print('프로그래밍 수정 처치됨');
-              },
-            ),
-          ],
+        child: ListView.separated(
+          itemBuilder: (context, index) {
+            Map<String, dynamic> todo = todoDatas[index];
+            // { "isDone" : false, "content" : "hi" }
+
+            return TodoItem(
+              isChecked: todo["isDone"],
+              text: todo["content"],
+              onDelete: () {},
+              onEdit: () {},
+            );
+          },
+          separatorBuilder: (context, index) {
+            return SizedBox(height: 10);
+          },
+          itemCount: todoDatas.length,
         ),
       ),
     );

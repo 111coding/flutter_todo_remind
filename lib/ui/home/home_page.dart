@@ -183,6 +183,24 @@ class _HomePageState extends State<HomePage> {
             print(todo);
 
             return TodoItem(
+              onCheckTap: () async {
+                print("여기서 체크 변경!");
+                // 현재 false 일 때 => true 로 업데이트
+                // 현재 true 일 때 => false 로 업데이트
+                // 1. 파이어스토어 인스턴스 가지고오기
+                FirebaseFirestore firestore = FirebaseFirestore.instance;
+                // 2. 컬렉션 참조 만들기
+                CollectionReference colRef = firestore.collection('todo_data');
+                // 3. 문서 참조 만들기
+                DocumentReference docRef = colRef.doc(todo['id']);
+                // 4. 문서 참조 이용해서 문서 업데이트
+                bool current = todo['isDone'];
+                bool nextValue = !current;
+                await docRef.update({
+                  'isDone': nextValue,
+                });
+                loadTodoList();
+              },
               isChecked: todo["isDone"],
               text: todo["content"],
               onDelete: () async {

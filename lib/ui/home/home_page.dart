@@ -1,54 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_todo_remind/data/model/todo.dart';
+import 'package:flutter_todo_remind/ui/home/home_view_model.dart';
 import 'package:flutter_todo_remind/ui/home/todo_item.dart';
 
 // 투두리스트 파이어스토어에서 가져와야하는 시점
 // => HomePage 들어왔을 때 최초 한번!
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerWidget {
   @override
-  State<HomePage> createState() => _HomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 1) 뷰모델 관리자한테 상태 달라고 하기
+    final homeState = ref.watch(homeViewModelProvider);
+    // 2) 뷰모델 관리자한테 뷰모델 달라고 하기
+    final homeViewModel = ref.read(homeViewModelProvider.notifier);
 
-class _HomePageState extends State<HomePage> {
-  List<Todo> todoDatas = [];
-
-  @override
-  void initState() {
-    super.initState();
-    // HomePage 들어왔을 때 최초 한번만 실행되는곳!
-    loadTodoList();
-  }
-
-  void loadTodoList() async {
-    // 전체 투두리스트 파이어스토어에서 가져오기
-    // 1. Firestore 인스턴스 가지고오기
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    // 2. 컬렉션 참조 만들기
-    CollectionReference colRef = firestore.collection('todo_data');
-    // 3. 모든 문서 불러오기
-    QuerySnapshot snapshot = await colRef.get();
-    List<QueryDocumentSnapshot> documentList = snapshot.docs;
-    // 4. 가지고온 데이터를 변환해주기!
-    List<Todo> newList = [];
-
-    for (var doc in documentList) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      Map<String, dynamic> dataWithId = {
-        ...data,
-        "id": doc.id,
-      };
-      newList.add(Todo.fromJson(dataWithId));
-    }
-
-    setState(() {
-      todoDatas = newList;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    PreferredSizeWidget;
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         shape: CircleBorder(),
@@ -103,29 +69,7 @@ class _HomePageState extends State<HomePage> {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () {
-                          // content라는 변수의 값을
-                          // Firestore 내 todo_data 라는 컬렉션에 저장
-
-                          // 파이어스토어에 저장할때 해야하는 순서:
-                          // 1. Firebase 인스턴스(객체) 가지고 오기
-                          // FirebaseFirestore() => 일반적인 객체 생성방법
-                          // Firebase는 FirebaseFirestore.instance 함수 이용해서 객체를 가지고 와야됨! (사용법)
-                          FirebaseFirestore firestore =
-                              FirebaseFirestore.instance;
-                          // 2. 가지고 온 파이어베이스 객체의 메서드를 사용해서 컬렉션 참조 만들기
-                          CollectionReference collectionRef =
-                              firestore.collection('todo_data');
-                          // 3. 만든 컬렉션 참조를 이용해서 문서 참조 만들기
-                          // 문서 참조 만들때 : doc 메서드 안에 String 타입의 변수 넣으면 해당 ID에 해당하는 문서 참조를 만듦.
-                          // 새로운 문서 만들거기 때문에 비워둠!
-                          DocumentReference docRef = collectionRef.doc();
-                          // 4. 문서참조 이용해서 데이터 저장하기
-                          // 키 - 값 쌍으로 값을 저장
-                          Map<String, dynamic> data = {
-                            'isDone': false,
-                            'content': content,
-                          };
-                          docRef.set(data);
+                          homeViewModel.writeTodo(content);
                           Navigator.pop(context);
                         },
                         style: ButtonStyle(
@@ -179,41 +123,19 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(20),
         child: ListView.separated(
           itemBuilder: (context, index) {
-            Todo todo = todoDatas[index];
+            Todo todo = homeState[index];
             // { "isDone" : false, "content" : "hi", "id" : "dsaklfjlaskfjalsk" }
             print(todo);
 
             return TodoItem(
               onCheckTap: () async {
                 print("여기서 체크 변경!");
-                // 현재 false 일 때 => true 로 업데이트
-                // 현재 true 일 때 => false 로 업데이트
-                // 1. 파이어스토어 인스턴스 가지고오기
-                FirebaseFirestore firestore = FirebaseFirestore.instance;
-                // 2. 컬렉션 참조 만들기
-                CollectionReference colRef = firestore.collection('todo_data');
-                // 3. 문서 참조 만들기
-                DocumentReference docRef = colRef.doc(todo.id);
-                // 4. 문서 참조 이용해서 문서 업데이트
-                bool current = todo.isDone;
-                bool nextValue = !current;
-                await docRef.update({
-                  'isDone': nextValue,
-                });
-                loadTodoList();
+                homeViewModel.updateTodo(todo);
               },
               isChecked: todo.isDone,
               text: todo.content,
               onDelete: () async {
-                // 1. 파이어스토어 인스턴스 가지고오기
-                FirebaseFirestore firestore = FirebaseFirestore.instance;
-                // 2. 컬렉션 참조 만들기
-                CollectionReference colRef = firestore.collection('todo_data');
-                // 3. 컬렉션 참조로 특정 문서에 대한 문서 참조 만들기.
-                DocumentReference docRef = colRef.doc(todo.id);
-                // 4. 삭제
-                await docRef.delete();
-                loadTodoList();
+                homeViewModel.deleteTodo(todo);
               },
               onEdit: () {},
             );
@@ -221,7 +143,7 @@ class _HomePageState extends State<HomePage> {
           separatorBuilder: (context, index) {
             return SizedBox(height: 10);
           },
-          itemCount: todoDatas.length,
+          itemCount: homeState.length,
         ),
       ),
     );

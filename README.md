@@ -37,7 +37,7 @@ https://firebase.google.com/docs/flutter/setup?hl=ko&platform=ios
   - [x] 전체 읽어오기
   - [x] 삭제
   - [X] 수정 (체크 시 isDone 업데이트)
-- [ ] 모델클래스 도입 ing
+- [X] 모델클래스 도입 ing
 - [ ] ViewModel 도입
 
 > 다음주 이후 화,금~!
